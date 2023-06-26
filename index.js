@@ -1,11 +1,10 @@
 const express = require("express")
 var jwt = require('jsonwebtoken');
-const bcrypt = require("bcrypt")
 require("dotenv").config()
-
-const {connection} = require("./config/db")
+const bcrypt = require("bcrypt")
 const {Usermodel} = require("./models/User.model")
-const {blogRouter} = require("./routes/blog.routes")
+const {connection} = require("./config/db")
+const {todoRouter} = require("./routes/todo.routes")
 const {authenticate} = require("./middlewares/authenticate")
 
 const app = express()
@@ -13,39 +12,41 @@ const app = express()
 app.use(express.json())
 
 app.post("/signup", async (req, res) => {
-    const {email, password, name, age} = req.body
-    const hashed_password = bcrypt.hashSync(password, 8);
+    const {email, password, name, IP_Address} = req.body
+    const hashed_password = bcrypt.hashSync(password,8);
     const new_user = new Usermodel({
         email,
-        password : hashed_password,
+        password :hashed_password,
         name,
-        age,
+        IP_Address        
     })
     await new_user.save()
-    res.send("signup successfull")
+    res.send("signup successfully")
 })
 
 app.post("/login", async (req, res) => {
-    const {email, password} = req.body
+    const{email, password} = req.body
     const user = await Usermodel.findOne({email})
     console.log(user)
     if(!user){
-        res.send("Please sign up")
+        res.send("Please signup")
     }
     const hash = user.password
-    const correct_password = bcrypt.compareSync(password, hash);
+
+    const correct_password = bcrypt.compareSync(password,hash);
     if(correct_password){
         const token = jwt.sign({ userID : user._id }, 
             process.env.JWT_SECRET);
-        res.send({"msg" : "login successfull", "token" : token})
+        res.send({"msg" : "login successfull", "token" :token})
     }
     else{
         res.send("login failed")
     }
 })
 
-app.use("/blogs", authenticate,  blogRouter)
 
+
+app.use("/todos", authenticate,  todoRouter)
 
 app.listen(process.env.PORT, async () => {
     try{
@@ -53,10 +54,10 @@ app.listen(process.env.PORT, async () => {
         console.log(`listening on port ${process.env.PORT}`)
     }
     catch(err){
-        console.log("error while connecting to DB")
+        console.log("error")
         console.log(err)
     }
-    console.log(`listening on port ${process.env.PORT}`)
+    
 })
 
 
