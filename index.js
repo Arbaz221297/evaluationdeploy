@@ -4,7 +4,7 @@ require("dotenv").config()
 const bcrypt = require("bcrypt")
 const {Usermodel} = require("./models/User.model")
 const {connection} = require("./config/db")
-const {todoRouter} = require("./routes/todo.routes")
+const {employeeRouter} = require("./routes/employee.routes")
 const {authenticate} = require("./middlewares/authenticate")
 
 const app = express()
@@ -12,13 +12,12 @@ const app = express()
 app.use(express.json())
 
 app.post("/signup", async (req, res) => {
-    const {email, password, name, IP_Address} = req.body
+    const {email, password} = req.body
     const hashed_password = bcrypt.hashSync(password,8);
     const new_user = new Usermodel({
         email,
         password :hashed_password,
-        name,
-        IP_Address        
+            
     })
     await new_user.save()
     res.send("signup successfully")
@@ -46,7 +45,7 @@ app.post("/login", async (req, res) => {
 
 
 
-app.use("/todos", authenticate,  todoRouter)
+app.use("/employee",  employeeRouter)
 
 app.listen(process.env.PORT, async () => {
     try{
